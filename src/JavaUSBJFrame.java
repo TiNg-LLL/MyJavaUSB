@@ -12,7 +12,25 @@ public class JavaUSBJFrame extends JFrame {
 
     static SerialPort chosenPort;
     SerialPort[] portNames = null;
-    boolean b = false;
+    //boolean b = false;
+    PrintWriter output = null;
+    JLabel messageText1 = new JLabel();
+
+    {
+        messageText1.setFont(new Font("宋体", Font.PLAIN, 12));
+    }
+
+    JLabel messageText2 = new JLabel();
+
+    {
+        messageText2.setFont(new Font("宋体", Font.PLAIN, 12));
+    }
+
+    JLabel messageText3 = new JLabel("  ");
+
+    {
+        messageText3.setFont(new Font("宋体", Font.PLAIN, 20));
+    }
 
     public JavaUSBJFrame(String s) {
 
@@ -20,7 +38,6 @@ public class JavaUSBJFrame extends JFrame {
         setTitle(s);
         setSize(400, 600);
         setLocation(1000, 260);
-        //getContentPane().setBackground(Color.black);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setResizable(false);
@@ -36,61 +53,58 @@ public class JavaUSBJFrame extends JFrame {
         comJPanel.add(connectButton);
         add(comJPanel, BorderLayout.NORTH);
 
-        //端口连接按钮实现
+        //连接按钮实现
         connectButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (connectButton.getText().equals("连接")) {
                     try {
                         chosenPort = SerialPort.getCommPort(portList.getSelectedItem().toString());
                         chosenPort.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-                        if (chosenPort.openPort()) {
+                        chosenPort.openPort();
+                        if (chosenPort.isOpen()) {
                             connectButton.setText("断开");
                             portList.setEnabled(false);
                             flashButton.setEnabled(false);
-                            PrintWriter output = new PrintWriter(chosenPort.getOutputStream());
-                           /* b = true;
-
-                            Thread thread = new Thread() {
-                                public void run() {
-                                    try {
-                                        Thread.sleep(100);
-                                    } catch (Exception e) {
-                                    }
-                                    while (b) {
-                                        output.print(new SimpleDateFormat("hh:mm:ss a     MMMMMMM dd, yyyy").format(new Date()));
-                                        output.flush();
-                                        try {
-                                            Thread.sleep(100);
-                                        } catch (Exception e) {
-                                        }
-                                    }
-                                }
-                            };
-                            thread.start();*/
+                            output = new PrintWriter(chosenPort.getOutputStream());
+                            messageText1.setText("端口已连接");
+                            messageText1.setForeground(Color.GREEN);
                             System.out.println("端口已连接");
                         }
                     } catch (Exception x) {
+                        messageText1.setText("没有可用的端口");
+                        messageText1.setForeground(Color.DARK_GRAY);
                         System.out.println("没有可用的端口");
-                        b = false;
-                        chosenPort.closePort();
+                        //b = false;
+                        try {
+                            if (chosenPort.isOpen()) {
+                                chosenPort.closePort();
+                            }
+                            output.close();
+                        } catch (Exception e1) {
+                        }
                         portList.setEnabled(true);
                         flashButton.setEnabled(true);
                         connectButton.setText("连接");
-                        x.printStackTrace();
+                        //x.printStackTrace();
                     }
                 } else {
-                    b = false;
-                    chosenPort.closePort();
+                    //b = false;
+                    if (chosenPort.isOpen()) {
+                        chosenPort.closePort();
+                    }
+                    output.close();
                     portList.setEnabled(true);
                     flashButton.setEnabled(true);
                     connectButton.setText("连接");
+                    messageText1.setText("端口已断开");
+                    messageText1.setForeground(Color.DARK_GRAY);
+                    System.out.println("端口已断开");
                 }
             }
         });
 
         //数据输出总面板    buttonJPanel
         JPanel buttonJPanel = new JPanel();
-        //buttonJPanel.setBackground(Color.GRAY);
         buttonJPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 20));
 
         //第一组数据按钮
@@ -106,12 +120,22 @@ public class JavaUSBJFrame extends JFrame {
         buttonJPanel.add(buttonJPanel1);
 
         jb1.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Set");
-                PrintWriter output = new PrintWriter(chosenPort.getOutputStream());
-                output.print(new SimpleDateFormat("hh:mm:ss a     MMMMMMM dd, yyyy").format(new Date()));
-                output.flush();
+                try {
+                    if (chosenPort.isOpen()) {
+                        output.print(new SimpleDateFormat("hh:mm:ss a     MMMMMMM dd, yyyy").format(new Date()));
+                        output.flush();
+                        messageText2.setText("text1已输出");
+                        System.out.println("text1已输出");
+                    } else {
+                        messageText2.setText("端口未连接");
+                        System.out.println("端口未连接");
+                    }
+                } catch (Exception x) {
+                    messageText2.setText("端口未连接");
+                    System.out.println("端口未连接");
+                    //x.printStackTrace();
+                }
             }
         });
 
@@ -148,6 +172,15 @@ public class JavaUSBJFrame extends JFrame {
         buttonJPanel4.add(jb4, BorderLayout.EAST);
         buttonJPanel.add(buttonJPanel4);
 
+        //底部信息面板
+        JPanel messagePanel = new JPanel();
+        messagePanel.setLayout(new BorderLayout());
+        messagePanel.add(messageText1, BorderLayout.WEST);
+        messagePanel.add(messageText3, BorderLayout.CENTER);
+        messagePanel.add(messageText2, BorderLayout.EAST);
+        messagePanel.setBackground(Color.GRAY);
+
+        add(messagePanel, BorderLayout.SOUTH);
         add(buttonJPanel, BorderLayout.CENTER);
         setVisible(true);
 
