@@ -1,4 +1,5 @@
-import com.fazecast.jSerialComm.SerialPort;
+
+import jssc.SerialPortList;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,8 +9,7 @@ import java.io.PrintWriter;
 
 public class JavaUSBJFrame extends JFrame {
 
-    static SerialPort chosenPort;
-    SerialPort[] portNames = null;
+    String[] portNames = null;
     PrintWriter output = null;
     JLabel messageText1 = new JLabel();                     //底部信息栏左面板
 
@@ -267,25 +267,25 @@ public class JavaUSBJFrame extends JFrame {
 
 //初始获取COM
         portList.removeAllItems();
-        portNames = SerialPort.getCommPorts();              //拿到电脑COM口信息
+        portNames = SerialPortList.getPortNames();              //拿到电脑COM口信息
         for (int i = 0; i < portNames.length; i++) {
-            portList.addItem(portNames[i].getSystemPortName());
+            portList.addItem(portNames[i]);
         }
 
 //COM刷新按钮
         flashButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
+                //portNames = null;
                 portList.removeAllItems();
-                portNames = SerialPort.getCommPorts();
+                portNames = SerialPortList.getPortNames();
                 for (int i = 0; i < portNames.length; i++) {
-                    portList.addItem(portNames[i].getSystemPortName());
+                    portList.addItem(portNames[i]);
                 }
             }
         });
 
 //读取线程
-
         class ReadThread extends Thread {
             public void run() {
                 while (true) {
