@@ -5,14 +5,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class JavaUSBJFrame extends JFrame {
 
     static SerialPort chosenPort;
     SerialPort[] portNames = null;
-    //boolean b = false;
     PrintWriter output = null;
     JLabel messageText1 = new JLabel();                     //底部信息栏左面板
 
@@ -33,41 +30,115 @@ public class JavaUSBJFrame extends JFrame {
     }
 
     public JavaUSBJFrame(String s) {
+//Modbus类创建
+        Modbus modbus = new Modbus();
 
-        //主窗口
+//主窗口
         setTitle(s);
-        setSize(400, 600);
-        setLocation(1000, 260);
+        setSize(1000, 600);
+        setLocation(500, 260);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setResizable(false);
 
-        //COM选择按钮模块   comJPanel
+//副窗口
+        JFrame jFrame2 = new JFrame("COM参数");
+        jFrame2.setSize(600, 90);
+        jFrame2.setLocation(750, 360);
+        jFrame2.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        jFrame2.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+
+        JLabel baudrateLabel = new JLabel("波特率:");
+        jFrame2.add(baudrateLabel);
+
+        JComboBox<Integer> baudrateList = new JComboBox<Integer>();
+        baudrateList.addItem(4800);
+        baudrateList.addItem(9600);
+        baudrateList.addItem(14400);
+        baudrateList.addItem(19200);
+        baudrateList.addItem(38400);
+        baudrateList.addItem(56000);
+        baudrateList.addItem(115200);
+        baudrateList.setSelectedIndex(3);
+        jFrame2.add(baudrateList);
+
+        JLabel jLabel = new JLabel("|");
+        jFrame2.add(jLabel);
+
+        JLabel bitnum = new JLabel("比特位");
+        jFrame2.add(bitnum);
+
+        JTextField bitJtf = new JTextField(2);
+        bitJtf.setText("8");
+        jFrame2.add(bitJtf);
+
+        JLabel jLabel1 = new JLabel("|");
+        jFrame2.add(jLabel1);
+
+        JLabel stopbit = new JLabel("结束位");
+        jFrame2.add(stopbit);
+
+        JTextField stoptf = new JTextField(2);
+        stoptf.setText("1");
+        jFrame2.add(stoptf);
+
+        JLabel jLabel2 = new JLabel("|");
+        jFrame2.add(jLabel2);
+
+        JLabel doublejl = new JLabel("奇偶校验");
+        jFrame2.add(doublejl);
+
+        JComboBox<String> doubleBox = new JComboBox<String>();
+        doubleBox.addItem("奇");
+        doubleBox.addItem("偶");
+        doubleBox.addItem("无");
+        doubleBox.setSelectedIndex(1);
+        jFrame2.add(doubleBox);
+
+        JLabel jLabel3 = new JLabel("|");
+        jFrame2.add(jLabel3);
+
+        JLabel slaveID = new JLabel("地址(默认1)");
+        jFrame2.add(slaveID);
+
+        JTextField bitJtf2 = new JTextField(2);
+        bitJtf2.setText("1");
+        jFrame2.add(bitJtf2);
+
+        jFrame2.setResizable(false);
+        jFrame2.setVisible(false);
+
+//COM选择按钮模块   comJPanel
         JPanel comJPanel = new JPanel();
         comJPanel.setBackground(Color.DARK_GRAY);
         JComboBox<String> portList = new JComboBox<String>();       //端口选择下拉菜单
         JButton connectButton = new JButton("连接");
         JButton flashButton = new JButton("端口刷新");
+        JButton comSet = new JButton("参数设置");
         comJPanel.add(portList);
         comJPanel.add(flashButton);
+        comJPanel.add(comSet);
         comJPanel.add(connectButton);
         add(comJPanel, BorderLayout.NORTH);
 
-        //连接按钮实现
+//连接按钮实现
         connectButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                String a = portList.getSelectedItem().toString();
+                Integer b = (Integer) baudrateList.getSelectedItem();
+                int c = Integer.parseInt(bitJtf.getText());
+                int d = Integer.valueOf(stoptf.getText());
+                String s = doubleBox.getSelectedItem().toString();
                 if (connectButton.getText().equals("连接")) {
                     try {
-                        chosenPort = SerialPort.getCommPort(portList.getSelectedItem().toString());
-                        chosenPort.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-                        chosenPort.openPort();
-                        if (chosenPort.isOpen()) {
+                        modbus.Modbusconnect(a, b, c, d, s);
+                        if (modbus.ModbusisConnected()) {
                             connectButton.setText("断开");
                             portList.setEnabled(false);
                             flashButton.setEnabled(false);
-                            output = new PrintWriter(chosenPort.getOutputStream());             //拿到连接端口的输出流
                             messageText1.setText("端口已连接");
                             messageText1.setForeground(Color.GREEN);
+                            comJPanel.setBackground(Color.GREEN);
                             System.out.println("端口已连接");
                         } else {
                             messageText1.setText("端口被占用");
@@ -75,62 +146,68 @@ public class JavaUSBJFrame extends JFrame {
                             System.out.println("端口被占用");
                         }
                     } catch (Exception x) {                                                     //没有端口可用
-                        messageText1.setText("没有可用的端口");
-                        messageText1.setForeground(Color.DARK_GRAY);
-                        System.out.println("没有可用的端口");
-                        //b = false;
-                        try {
-                            if (chosenPort.isOpen()) {
-                                chosenPort.closePort();
-                            }
-                            output.close();
-                        } catch (Exception e1) {
-                        }
-                        portList.setEnabled(true);
-                        flashButton.setEnabled(true);
-                        connectButton.setText("连接");
-                        //x.printStackTrace();
+                        System.out.println("奇怪的报错");
                     }
                 } else {                                                                        //断开连接
-                    //b = false;
-                    if (chosenPort.isOpen()) {
-                        chosenPort.closePort();
+                    if (modbus.ModbusisConnected()) {
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException interruptedException) {
+                            interruptedException.printStackTrace();
+                        }
+                        modbus.ModbusDisconnect();
                     }
-                    output.close();
                     portList.setEnabled(true);
                     flashButton.setEnabled(true);
                     connectButton.setText("连接");
                     messageText1.setText("端口已断开");
                     messageText1.setForeground(Color.DARK_GRAY);
+                    comJPanel.setBackground(Color.DARK_GRAY);
                     System.out.println("端口已断开");
                 }
             }
         });
 
-        //数据输出总面板    buttonJPanel
+//参数设置按钮实现
+        comSet.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                jFrame2.setVisible(true);
+            }
+        });
+
+//数据输出总面板    buttonJPanel
         JPanel buttonJPanel = new JPanel();
         buttonJPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 20));
 
-        //第一组数据按钮
+//数据传递
+        int slaveId = Integer.parseInt(bitJtf2.getText());
+        int offset = 2;
+
+//第一组数据按钮
         JPanel buttonJPanel1 = new JPanel();
-        //buttonJPanel1.setPreferredSize(new Dimension(180,30));
-        buttonJPanel1.setLayout(new BorderLayout());
-        JLabel jl1 = new JLabel("text1");
-        JTextField jt1 = new JTextField(20);
+        buttonJPanel1.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JLabel jl1 = new JLabel("D2");
+        JTextField jt1 = new JTextField(10);
         JButton jb1 = new JButton("Set");
-        buttonJPanel1.add(jl1, BorderLayout.WEST);
-        buttonJPanel1.add(jt1, BorderLayout.CENTER);
-        buttonJPanel1.add(jb1, BorderLayout.EAST);
+        JLabel jlnow = new JLabel("当前值:");
+        buttonJPanel1.add(jl1);
+        buttonJPanel1.add(jt1);
+        buttonJPanel1.add(jb1);
+        buttonJPanel1.add(jlnow);
         buttonJPanel.add(buttonJPanel1);
 
         jb1.addActionListener(new ActionListener() {                    //set按钮动作
             public void actionPerformed(ActionEvent e) {
                 try {
-                    if (chosenPort.isOpen()) {
-                        output.print(jt1.getText());            //输出
-                        output.flush();
-                        messageText2.setText("Text1:" + jt1.getText() + "已输出");
-                        System.out.println("text1已输出");
+                    if (modbus.ModbusisConnected()) {
+                        String sjt1 = jt1.getText();
+                        int c = 0;
+                        if (!(sjt1 == null)) {
+                            c = Integer.parseInt(sjt1);
+                        }
+                        int quantity = c;
+                        modbus.ModbuswriteSingleRegister(slaveId, offset, quantity);
+
                     } else {
                         messageText2.setText("端口未连接1");
                         System.out.println("端口未连接1");
@@ -138,12 +215,12 @@ public class JavaUSBJFrame extends JFrame {
                 } catch (Exception x) {
                     messageText2.setText("端口未连接");
                     System.out.println("端口未连接");
-                    //x.printStackTrace();
+                    x.printStackTrace();
                 }
             }
         });
 
-        //第二组数据按钮
+//第二组数据按钮
         JPanel buttonJPanel2 = new JPanel();
         buttonJPanel2.setLayout(new BorderLayout());
         JLabel jl2 = new JLabel("text2");
@@ -154,7 +231,7 @@ public class JavaUSBJFrame extends JFrame {
         buttonJPanel2.add(jb2, BorderLayout.EAST);
         buttonJPanel.add(buttonJPanel2);
 
-        //第三组数据按钮
+//第三组数据按钮
         JPanel buttonJPanel3 = new JPanel();
         buttonJPanel3.setLayout(new BorderLayout());
         JLabel jl3 = new JLabel("text2");
@@ -165,7 +242,7 @@ public class JavaUSBJFrame extends JFrame {
         buttonJPanel3.add(jb3, BorderLayout.EAST);
         buttonJPanel.add(buttonJPanel3);
 
-        //第四组数据按钮
+//第四组数据按钮
         JPanel buttonJPanel4 = new JPanel();
         buttonJPanel4.setLayout(new BorderLayout());
         JLabel jl4 = new JLabel("text2");
@@ -176,7 +253,7 @@ public class JavaUSBJFrame extends JFrame {
         buttonJPanel4.add(jb4, BorderLayout.EAST);
         buttonJPanel.add(buttonJPanel4);
 
-        //底部信息面板
+//底部信息面板
         JPanel messagePanel = new JPanel();
         messagePanel.setLayout(new BorderLayout());
         messagePanel.add(messageText1, BorderLayout.WEST);
@@ -188,18 +265,17 @@ public class JavaUSBJFrame extends JFrame {
         add(buttonJPanel, BorderLayout.CENTER);
         setVisible(true);
 
-        //初始获取COM
+//初始获取COM
         portList.removeAllItems();
         portNames = SerialPort.getCommPorts();              //拿到电脑COM口信息
         for (int i = 0; i < portNames.length; i++) {
             portList.addItem(portNames[i].getSystemPortName());
         }
 
-        //COM刷新按钮
+//COM刷新按钮
         flashButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                //portNames = null;
                 portList.removeAllItems();
                 portNames = SerialPort.getCommPorts();
                 for (int i = 0; i < portNames.length; i++) {
@@ -207,5 +283,24 @@ public class JavaUSBJFrame extends JFrame {
                 }
             }
         });
+
+//读取线程
+
+        class ReadThread extends Thread {
+            public void run() {
+                while (true) {
+                    try {
+                        Thread.sleep(500);
+                    } catch (Exception e) {
+                    }
+                    if (modbus.ModbusisConnected()) {
+                        jlnow.setText("当前值：" + modbus.ModbusreadHoldingRegisters(slaveId, offset, 1));
+                    }
+                }
+            }
+        }
+        ;
+        ReadThread readThread = new ReadThread();
+        readThread.start();
     }
 }
