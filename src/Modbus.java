@@ -84,12 +84,10 @@ public class Modbus {
         }
     }
 
-    public String ModbusreadHoldingRegisters(int slaveId, int offset, int quantity) {
+    public int[] ModbusreadHoldingRegisters(int slaveId, int offset, int quantity) {
         try {
             int[] i = m.readHoldingRegisters(slaveId, offset, quantity);
-            StringBuffer sb = new StringBuffer();
-            sb.append(i[0]);
-            return sb.toString();
+            return i;
         } catch (ModbusProtocolException e) {
             e.printStackTrace();
         } catch (ModbusNumberException e) {
@@ -98,5 +96,33 @@ public class Modbus {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void ModbuswritetrueMultipleCoils(int slaveId, int offset) {
+        boolean[] b = new boolean[1];
+        b[0] = true;
+        try {
+            m.writeMultipleCoils(slaveId, offset, b);
+        } catch (ModbusProtocolException e) {
+            e.printStackTrace();
+        } catch (ModbusNumberException e) {
+            e.printStackTrace();
+        } catch (ModbusIOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void ModbuswritefalseMultipleCoils(int slaveId, int offset) {
+        boolean[] b = new boolean[1];
+        b[0] = false;
+        try {
+            m.writeMultipleCoils(slaveId, offset, b);
+        } catch (ModbusProtocolException e) {
+            e.printStackTrace();
+        } catch (ModbusNumberException e) {
+            e.printStackTrace();
+        } catch (ModbusIOException e) {
+            e.printStackTrace();
+        }
     }
 }
