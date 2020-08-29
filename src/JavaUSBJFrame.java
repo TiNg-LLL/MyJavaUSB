@@ -191,7 +191,7 @@ public class JavaUSBJFrame extends JFrame {
 //左侧数据输出面板
         JPanel buttonJPanel = new JPanel();
         buttonJPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 10));
-        buttonJPanel.setPreferredSize(new Dimension(320, 500));
+        buttonJPanel.setPreferredSize(new Dimension(300, 500));
 
 //地址参数设置按钮
         JPanel buttonJPanel0 = new JPanel();
@@ -212,7 +212,7 @@ public class JavaUSBJFrame extends JFrame {
         jFrame3.add(no1jl);
 
         JTextField no1jf = new JTextField(5);
-        no1jf.setText("0");
+        no1jf.setText("4050");
         jFrame3.add(no1jf);
 
         JLabel nojLabel = new JLabel("|");
@@ -222,7 +222,7 @@ public class JavaUSBJFrame extends JFrame {
         jFrame3.add(no2jl);
 
         JTextField no2jf = new JTextField(5);
-        no2jf.setText("1");
+        no2jf.setText("4200");
         jFrame3.add(no2jf);
 
         JLabel nojLabel1 = new JLabel("|");
@@ -232,7 +232,7 @@ public class JavaUSBJFrame extends JFrame {
         jFrame3.add(no3jl);
 
         JTextField no3jf = new JTextField(5);
-        no3jf.setText("2");
+        no3jf.setText("4100");
         jFrame3.add(no3jf);
 
         JLabel nojLabel2 = new JLabel("|");
@@ -242,7 +242,7 @@ public class JavaUSBJFrame extends JFrame {
         jFrame3.add(no4jl);
 
         JTextField no4jf = new JTextField(5);
-        no4jf.setText("3");
+        no4jf.setText("4101");
         jFrame3.add(no4jf);
 
         JLabel mid1jl = new JLabel("材料厚度");
@@ -363,7 +363,7 @@ public class JavaUSBJFrame extends JFrame {
                         }
                         int quantity = c;
                         modbus.ModbuswriteSingleRegister(slaveId[0], offset[0], quantity);
-
+                        messageText2.setText("速度设置成功");
                     } else {
                         messageText2.setText("端口未连接1");
                         System.out.println("端口未连接1");
@@ -405,7 +405,7 @@ public class JavaUSBJFrame extends JFrame {
                         }
                         int quantity = c;
                         modbus.ModbuswriteSingleRegister(slaveId[0], offset2[0], quantity);
-
+                        messageText2.setText("加减速设置成功");
                     } else {
                         messageText2.setText("端口未连接1");
                         System.out.println("端口未连接1");
@@ -447,7 +447,7 @@ public class JavaUSBJFrame extends JFrame {
                         }
                         int quantity = c;
                         modbus.ModbuswriteSingleRegister(slaveId[0], offset3[0], quantity);
-
+                        messageText2.setText("上端目标位置设置成功");
                     } else {
                         messageText2.setText("端口未连接1");
                         System.out.println("端口未连接1");
@@ -489,7 +489,7 @@ public class JavaUSBJFrame extends JFrame {
                         }
                         int quantity = c;
                         modbus.ModbuswriteSingleRegister(slaveId[0], offset4[0], quantity);
-
+                        messageText2.setText("下端目标位置设置成功");
                     } else {
                         messageText2.setText("端口未连接1");
                         System.out.println("端口未连接1");
@@ -532,7 +532,7 @@ public class JavaUSBJFrame extends JFrame {
                         }
                         int quantity = c;
                         modbus.ModbuswriteSingleRegister(slaveId[0], midset[0], quantity);
-
+                        messageText2.setText("材料厚度设置成功");
                     } else {
                         messageText2.setText("端口未连接");
                         System.out.println("端口未连接");
@@ -645,14 +645,14 @@ public class JavaUSBJFrame extends JFrame {
         jFrame4.add(upsetjl);
 
         JTextField upsetjf = new JTextField(5);
-        upsetjf.setText("18432");
+        upsetjf.setText("10");
         jFrame4.add(upsetjf);
 
         JLabel downsetjl = new JLabel("下指令地址:");
         jFrame4.add(downsetjl);
 
         JTextField downsetjf = new JTextField(5);
-        downsetjf.setText("18433");
+        downsetjf.setText("11");
         jFrame4.add(downsetjf);
 
         JButton updownsetjb = new JButton("设置");
@@ -798,6 +798,6 @@ public class JavaUSBJFrame extends JFrame {
         }
         ;
         ReadThread readThread = new ReadThread();
-        readThread.start();
+        //readThread.start();
     }
 }
